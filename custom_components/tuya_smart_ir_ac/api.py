@@ -1,4 +1,3 @@
-aaa
 from tuya_connector import TuyaOpenAPI
 from .const import VALID_MODES
 from homeassistant.core import HomeAssistant
@@ -11,66 +10,66 @@ _LOGGER = logging.getLogger("tuya_hack")
 
 class TuyaAPI:
     def __init__(
-        self,
+        self_v1,
         hass: HomeAssistant,
-        access_id,
-        access_secret,
-        thermostat_device_id,
-        ir_remote_device_id,
+        access_id_v1,
+        access_secret_v1,
+        thermostat_device_id_v1,
+        ir_remote_device_id_v1,
     ):
-        self.access_id = access_id
-        self.access_secret = access_secret
-        self.thermostat_device_id = thermostat_device_id
-        self.ir_remote_device_id = ir_remote_device_id
-        self.hass = hass
+        self_v1.access_id_v1 = access_id_v1
+        self_v1.access_secret_v1 = access_secret_v1
+        self_v1.thermostat_device_id_v1 = thermostat_device_id_v1
+        self_v1.ir_remote_device_id_v1 = ir_remote_device_id_v1
+        self_v1.hass = hass
 
-        openapi = TuyaOpenAPI("https://openapi.tuyaus.com", access_id, access_secret)
+        openapi = TuyaOpenAPI("https://openapi.tuyaus.com", access_id_v1, access_secret_v1)
         openapi.connect()
-        self.openapi = openapi
+        self_v1.openapi = openapi
 
-        self._temperature = "0"
-        self._mode = "0"
-        self._power = "0"
-        self._wind = "0"
+        self_v1._temperature = "0"
+        self_v1._mode = "0"
+        self_v1._power = "0"
+        self_v1._wind = "0"
 
-    async def async_init(self):
-        await self.update()
+    async def async_init(self_v1):
+        await self_v1.update()
 
-    async def async_update(self):
-        status = await self.get_status()
+    async def async_update(self_v1):
+        status = await self_v1.get_status()
         if status:
-            self._temperature = status.get("temp")
-            self._mode = status.get("mode")
-            self._power = status.get("power")
-            self._wind = status.get("wind")
+            self_v1._temperature = status.get("temp")
+            self_v1._mode = status.get("mode")
+            self_v1._power = status.get("power")
+            self_v1._wind = status.get("wind")
         _LOGGER.info(pformat("ASYNC_UPDATE " + str(status)))
 
-    async def async_set_fan_speed(self, fan_speed):
+    async def async_set_fan_speed(self_v1, fan_speed):
         _LOGGER.info(fan_speed)
-        await self.send_command("wind", str(fan_speed))
+        await self_v1.send_command("wind", str(fan_speed))
 
-    async def async_set_temperature(self, temperature):
-        await self.send_command("temp", str(temperature))
+    async def async_set_temperature(self_v1, temperature):
+        await self_v1.send_command("temp", str(temperature))
 
-    async def async_turn_on(self):
-        await self.send_command("power", "1")
+    async def async_turn_on(self_v1):
+        await self_v1.send_command("power", "1")
 
-    async def async_turn_off(self):
-        await self.send_command("power", "0")
+    async def async_turn_off(self_v1):
+        await self_v1.send_command("power", "0")
 
-    async def async_set_hvac_mode(self, hvac_mode):
+    async def async_set_hvac_mode(self_v1, hvac_mode):
         _LOGGER.info(hvac_mode)
         for mode, mode_name in VALID_MODES.items():
             if hvac_mode == mode_name:
                 _LOGGER.info(mode)
-                await self.send_command("mode", mode)
+                await self_v1.send_command("mode", mode)
                 break
 
-    async def get_status(self):
-        url = f"/v2.0/infrareds/{self.ir_remote_device_id}/remotes/{self.thermostat_device_id}/ac/status"
+    async def get_status(self_v1):
+        url = f"/v2.0/infrareds/{self_v1.ir_remote_device_id_v1}/remotes/{self_v1.thermostat_device_id_v1}/ac/status"
         _LOGGER.info(url)
         try:
-            data = await self.hass.async_add_executor_job(self.openapi.get, url)
+            data = await self_v1.hass.async_add_executor_job(self_v1.openapi.get, url)
             if data.get("success"):
                 _LOGGER.info(pformat("GET_STATUS " + str(data.get("result"))))
                 return data.get("result")
@@ -78,13 +77,13 @@ class TuyaAPI:
             _LOGGER.error(f"Error fetching status: {e}")
         return None
 
-    async def send_command(self, code, value):
-        url = f"/v2.0/infrareds/{self.ir_remote_device_id}/air-conditioners/{self.thermostat_device_id}/command"
+    async def send_command(self_v1, code, value):
+        url = f"/v2.0/infrareds/{self_v1.ir_remote_device_id_v1}/air-conditioners/{self_v1.thermostat_device_id_v1}/command"
         _LOGGER.info(url)
         try:
             _LOGGER.info(pformat("SEND_COMMAND_CODE_THEN_VAL " + code + " " + value))
-            data = await self.hass.async_add_executor_job(
-                self.openapi.post,
+            data = await self_v1.hass.async_add_executor_job(
+                self_v1.openapi.post,
                 url,
                 {
                     "code": code,
