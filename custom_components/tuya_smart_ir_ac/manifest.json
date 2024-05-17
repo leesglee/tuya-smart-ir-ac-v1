@@ -1,6 +1,6 @@
 {
-   "domain": "tuya_smart_ir_ac",
-   "name": "Air Conditioner via IR",
+   "domain": "tuya_smart_ir_ac_v1",
+   "name": "Air Conditioner via IR_v1",
    "codeowners": [],
    "documentation": "https://davidilie.com",
    "integration_type": "entity",
